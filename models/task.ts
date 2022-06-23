@@ -1,6 +1,7 @@
-import Document from "mongodb";
+import { ObjectId } from "mongodb";
 
-interface Task extends Document {
+interface Task {
+  _id: ObjectId;
   description: string;
 }
 

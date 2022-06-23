@@ -1,9 +1,11 @@
 import express from "express";
-import taskApiRouter from "./api/tasksApi";
+import taskApi from "./api/tasksApi";
 
 const app = express();
 
-app.use("/tasks", taskApiRouter);
+app.use(express.json());
+
+app.use("/tasks", taskApi);
 
 app.listen(3000, () => {
   console.log("The application is listening on port 3000!");
