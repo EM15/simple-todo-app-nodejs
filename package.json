@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "start": "tsc & node dist/index.js",
+    "build": "eslint . --ext .ts & tsc",
+    "start": "eslint . --ext .ts & tsc & node dist/index.js",
     "lint": "eslint . --ext .ts"
   },
   "repository": {
