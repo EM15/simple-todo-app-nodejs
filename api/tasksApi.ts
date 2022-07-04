@@ -1,34 +1,23 @@
 import express from "express";
-import { MongoClient, ObjectId } from "mongodb";
-import Task from "../models/task";
+import { ObjectId } from "mongodb";
+import TaskDb from "../db/tasksDb";
 import TaskCreateRequestDto from "./dtos/taskCreateRequestDto";
 import TaskUpdateRequestDto from "./dtos/taskUpdateRequestDto";
+import STATUS_CODES from "./statusCodes";
 import { TypedRequestBody, TypedRequestBodyAndParams } from "./types";
 
 const taskApi = express.Router();
-const client = new MongoClient("mongodb://localhost:27017/");
+const taskDb = new TaskDb();
 
 taskApi.get("/", async (req, res) => {
-  await client.connect();
-  const tasks = await client
-    .db("simple-todo")
-    .collection<Task>("tasks")
-    .find()
-    .toArray();
-
+  const tasks = await taskDb.getAll();
   res.send(tasks);
 });
 
 taskApi.post("/", async (req: TypedRequestBody<TaskCreateRequestDto>, res) => {
-  console.log(req.body);
-  await client.connect();
-  const result = await client
-    .db("simple-todo")
-    .collection<Task>("tasks")
-    .insertOne({ _id: new ObjectId(), description: req.body.description });
-
-  res.status(201);
-  res.send(result.insertedId);
+  const insertedId = await taskDb.insert({ ...req.body });
+  res.status(STATUS_CODES.CREATED);
+  res.send(insertedId);
 });
 
 taskApi.put(
@@ -38,20 +27,17 @@ taskApi.put(
     res
   ) => {
     const id = req.params.id;
-    await client.connect();
-    await client
-      .db("simple-todo")
-      .collection<Task>("tasks")
-      .updateOne(
-        { _id: new ObjectId(id) },
-        {
-          $set: { description: req.body.description },
-        }
-      );
-
-    res.status(204);
+    await taskDb.update(new ObjectId(id), { ...req.body });
+    res.status(STATUS_CODES.NO_CONTENT);
     res.send();
   }
 );
+
+taskApi.delete("/:id", async (req: TypedRequestBody<{ id: string }>, res) => {
+  const id = req.params.id;
+  await taskDb.delete(new ObjectId(id));
+  res.status(STATUS_CODES.NO_CONTENT);
+  res.send();
+});
 
 export default taskApi;
